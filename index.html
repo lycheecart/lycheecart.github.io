@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Responsive CIDR Bit Visualizer</title>
+
+<style>
+ body { 
+     width: 66%; 
+     background: #022;
+     color: #fff;
+     line-height: 1.4em;
+     font-size: 1.2em;
+     padding: 2em;
+ }
+ 
+ td {
+     border-top: 1px solid grey;
+     margin: 0px; 
+ }
+  
+ button {
+     padding: 0.5em;
+ }
+
+</style>
+ 
+</head>
+ 
+<body>
+ <h1>Responsive CIDR Bit Visualizer</h1>
+
+ <h4>Network Address</h4>
+ <div id = "address">
+  <button id = "address0">0</button><button id = "address1">0</button><button id = "address2">1</button><button id = "address3">1</button><button id = "address4">0</button><button id = "address5">1</button><button id = "address6">0</button><button id = "address7">0</button> 
+  <button id = "address8">1</button><button id = "address9">0</button><button id = "address10">0</button><button id = "address11">1</button><button id = "address12">0</button><button id = "address13">0</button><button id = "address14">0</button><button id = "address15">1</button> 
+  <button id = "address16">0</button><button id = "address17">0</button><button id = "address18">0</button><button id = "address19">1</button><button id = "address20">1</button><button id = "address21">0</button><button id = "address22">0</button><button id = "address23">1</button> 
+  <button id = "address24">1</button><button id = "address25">0</button><button id = "address26">0</button><button id = "address27">1</button><button id = "address28">1</button><button id = "address29">0</button><button id = "address30">0</button><button id = "address31">0</button>
+ </div>
+
+ <div id = "addressdecimal">
+ 52.145.25.152
+ </div>
+
+
+ <h4>Prefix Length</h4>
+  <label for="prefixlength">/</label>
+  <input type="number" id = "prefixlength" min="0" max="32" value="27"/>
+
+ <h4>Equivalent Network Address</h4>
+ <div id = "equivalentaddress">
+  00110100 10010001 00011001 10000000
+ </div>
+
+ <div id = "equivalentaddressdecimal">
+ 52.145.25.128
+ </div>
+
+ <dl>
+  <dt>
+   Largest count of interfaces including broadcast &amp; network itself: 
+  </dt>
+  <dd>
+   <span id = "interfacesdecimal">XX</span> (2**<span id="hostspow">YY</span>) Interfaces
+  </dd>
+ </dl>
+
+ <p>End Address <span id = "endaddress">AAA.BBB.CCC.DDD</span></p>
+
+ <h4>Doodads</h4>
+ <button id = "zeroer">Set all bits to 0</button>
+
+<script>
+ networkBitButtons = [
+    document.getElementById("address0"),
+    document.getElementById("address1"),
+    document.getElementById("address2"),
+    document.getElementById("address3"),
+    document.getElementById("address4"),
+    document.getElementById("address5"),
+    document.getElementById("address6"),
+    document.getElementById("address7"),
+    document.getElementById("address8"),
+    document.getElementById("address9"),
+    document.getElementById("address10"),
+    document.getElementById("address11"),
+    document.getElementById("address12"),
+    document.getElementById("address13"),
+    document.getElementById("address14"),
+    document.getElementById("address15"),
+    document.getElementById("address16"),
+    document.getElementById("address17"),
+    document.getElementById("address18"),
+    document.getElementById("address19"),
+    document.getElementById("address20"),
+    document.getElementById("address21"),
+    document.getElementById("address22"),
+    document.getElementById("address23"),
+    document.getElementById("address24"),
+    document.getElementById("address25"),
+    document.getElementById("address26"),
+    document.getElementById("address27"),
+    document.getElementById("address28"),
+    document.getElementById("address29"),
+    document.getElementById("address30"),
+    document.getElementById("address31")
+ ];
+
+ function binStrToDecStr(bs) {
+     dsum = 0;
+     power = 7
+
+     for (let i = 0; i < bs.length; i++) {
+        if (bs.charAt(i) == "1") {
+            dsum += 2**power;
+        }
+        power -= 1;
+	 }
+
+     return dsum.toString();
+ }
+
+ function deciv4(ba) {
+     octets = [];
+     octets.push(ba.substring( 0, 8));
+     octets.push(ba.substring( 8,16));
+     octets.push(ba.substring(16,24));
+     octets.push(ba.substring(24,32));
+
+     return binStrToDecStr(octets[0]) + "." + binStrToDecStr(octets[1]) + "." + binStrToDecStr(octets[2]) + "." + binStrToDecStr(octets[3]);
+ }
+
+ function spacedOctetsString(bs) {
+     spacedString = "";
+     spacedString = spacedString + bs.substring( 0, 8) + " ";
+     spacedString = spacedString + bs.substring( 8,16) + " ";
+     spacedString = spacedString + bs.substring(16,24) + " ";
+     spacedString = spacedString + bs.substring(24,32);
+     return spacedString;
+ }
+
+ function endAddress(unspacedBinaryStr, prefixLength) {
+     ea = unspacedBinaryStr.substr(0, prefixLength);
+     for(let i = prefixLength; i < 32; i++) {
+         ea = ea + "1";
+     }
+
+     return ea;
+ }
+
+ function updateDisplay() {
+     daAddress = "";
+
+     networkBitButtons.forEach(function(button) {
+        daAddress = daAddress + button.innerHTML;
+     });
+
+     deciAddress = deciv4(daAddress);
+     document.getElementById("addressdecimal").innerHTML = deciAddress;
+
+     prefixLength = document.getElementById("prefixlength").value;
+
+     equiAddress = "";
+     for (let i = 0; i < daAddress.length && i < Number(prefixLength); i++) {
+         equiAddress = equiAddress + daAddress.charAt(i);
+     }
+     for (let i = Number(prefixLength); i < 32; i++) {
+         equiAddress = equiAddress + "0";
+     }
+
+     document.getElementById("equivalentaddress").innerHTML = spacedOctetsString(equiAddress);
+     document.getElementById("equivalentaddressdecimal").innerHTML = deciv4(equiAddress);
+
+     hostspow = 32-Number(prefixLength);
+
+     document.getElementById("hostspow").innerHTML = hostspow.toString();
+     document.getElementById("interfacesdecimal").innerHTML = (2**hostspow).toString();
+
+     endStr = endAddress(equiAddress, Number(prefixLength)).toString();
+     document.getElementById("endaddress").innerHTML = deciv4(endStr);
+ }
+
+ networkBitButtons.forEach(function(button) {
+     button.addEventListener("click", function() {
+         if (this.innerHTML == "0") {
+             this.innerHTML = "1";
+         } else if (this.innerHTML == "1") {
+             this.innerHTML = "0";
+         }
+
+         updateDisplay();
+
+     });
+ });
+
+ document.getElementById("prefixlength").onchange = function() {
+     updateDisplay();
+ };
+
+ function nullifyAddress() {
+     networkBitButtons.forEach(function(button) {
+         button.innerHTML = "0";
+     });
+ };
+
+ document.getElementById("zeroer").onclick = function() {
+     nullifyAddress();
+     updateDisplay();
+ };
+
+ updateDisplay();
+
+
+
+</script>
+
+</body> 
+
+</html>
+
